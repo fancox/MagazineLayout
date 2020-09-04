@@ -836,6 +836,23 @@ public final class MagazineLayout: UICollectionViewLayout {
     super.invalidateLayout(with: context)
   }
 
+  public override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
+    if
+      let firstVisibleItemIndex = collectionView?.indexPathsForVisibleItems.sorted().first,
+      let id = modelState.idForItemModel(at: firstVisibleItemIndex, .beforeUpdates),
+      let indexPathAfterUpdates = modelState.indexPathForItemModel(withID: id, .afterUpdates),
+      indexPathAfterUpdates > firstVisibleItemIndex
+    {
+
+      let frameBeforeUpdates = modelState.frameForItem(at: .init(indexPath: firstVisibleItemIndex), .beforeUpdates)
+      let frameAfterUpdates = modelState.frameForItem(at: .init(indexPath: indexPathAfterUpdates), .afterUpdates)
+      let diff = frameAfterUpdates.minY - frameBeforeUpdates.minY
+      return CGPoint(x: proposedContentOffset.x, y: proposedContentOffset.y + diff)
+    }
+
+    return proposedContentOffset
+  }
+
   // MARK: Private
 
   private var currentCollectionView: UICollectionView {
